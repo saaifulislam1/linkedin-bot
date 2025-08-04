@@ -223,6 +223,7 @@
       <nav>
         <a href="index.html" class="active" id="nav-home">Home</a>
         <a href="archive.html" id="nav-archive">Archive</a>
+        <a href="#" id="nav-about">About</a>
       </nav>
       <button class="dark-mode-toggle" id="toggle-theme">🌙 Dark Mode</button>
     </header>
@@ -377,13 +378,15 @@
               card.className = "card";
               card.setAttribute("data-timestamp", timestamp);
               card.innerHTML = `
-              <div class="topic">📌 ${topic}</div>
-              <div class="timestamp">🕒 ${new Date(
-                timestamp
-              ).toLocaleString()}</div>
-              <div class="post">${post.replace(/\n/g, "<br>")}</div>
-              <button class="archive-btn" onclick="archivePost('${timestamp}')">Archive</button>
-            `;
+  <div class="topic">📌 ${topic}</div>
+  <div class="timestamp">🕒 ${new Date(timestamp).toLocaleString()}</div>
+  <div class="post" id="post-${index}">${post.replace(/\n/g, "<br>")}</div>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 0.5rem;">
+    <button class="archive-btn" onclick="archivePost('${timestamp}')">Archive</button>
+    <button class="archive-btn" style="background:#0077b5;" onclick="copyToClipboard('post-${index}')">📋 Copy</button>
+  </div>
+`;
+
               postsContainer.appendChild(card);
             });
           }
@@ -397,6 +400,45 @@
 
       renderFilters();
       fetchAndDisplayPosts();
+      function copyToClipboard(id) {
+        const el = document.getElementById(id);
+        const text = el.innerText;
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            Swal.fire({
+              toast: true,
+              position: "top-end",
+              icon: "success",
+              title: "Post copied to clipboard!",
+              showConfirmButton: false,
+              timer: 1500,
+              timerProgressBar: true,
+            });
+          })
+          .catch(() => {
+            Swal.fire({
+              icon: "error",
+              title: "Oops!",
+              text: "Failed to copy. Please try again.",
+            });
+          });
+      }
+
+      document.getElementById("nav-about").addEventListener("click", (e) => {
+        e.preventDefault();
+        Swal.fire({
+          title: "About This Project",
+          html: `
+      <p>This tool auto-generates high-quality LinkedIn posts daily using AI (OpenAI GPT-4),</p>
+      <p>It categorizes them by topic (e.g., React, Docker, Next.js), displays them beautifully, and allows you to archive or copy them easily.</p>
+      <p>Posts are saved and managed using Unstructured DB, and generated on a schedule based on your time zone</p>
+      <p>Built with Node.js, Express, OpenAI API, and Google Sheets API.</p>
+    `,
+          icon: "info",
+          confirmButtonText: "Close",
+        });
+      });
     </script>
   </body>
 </html>
