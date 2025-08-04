@@ -11,8 +11,7 @@ const auth = new google.auth.GoogleAuth({
 
 const sheets = google.sheets({ version: "v4", auth });
 
-const SPREADSHEET_ID =
-  process.env.GOOGLE_SHEET_ID || "1feRjf1KgQCzCKqPJ-vXi2PZ_rO2lLdUzeKqeiKvKxdw";
+const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
 const SHEET_NAME = "Sheet1"; // Adjust if your sheet name is different
 
 // ✅ Append a new post with default status "ACTIVE"
