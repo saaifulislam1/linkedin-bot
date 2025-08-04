@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LinkedIn Post Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      :root {
+        --color-primary: #0077b5;
+        --color-primary-dark: #005582;
+        --color-bg-light: #f9fafb;
+        --color-bg-dark: #121212;
+        --color-text-light: #222;
+        --color-text-dark: #eee;
+        --color-card-bg-light: white;
+        --color-card-bg-dark: #1e1e1e;
+        --color-danger: #ff5252;
+      }
+
+      html.dark {
+        background-color: var(--color-bg-dark);
+        color: var(--color-text-dark);
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--color-bg-light);
+        color: var(--color-text-light);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      html.dark body {
+        background-color: var(--color-bg-dark);
+        color: var(--color-text-dark);
+      }
+
+      /* Navigation header */
+      header {
+        background: var(--color-primary);
+        color: white;
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+
+      header nav a {
+        color: white;
+        text-decoration: none;
+        margin-right: 1rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+      }
+
+      header nav a:hover,
+      header nav a.active {
+        text-decoration: underline;
+      }
+
+      .dark-mode-toggle {
+        cursor: pointer;
+        background: transparent;
+        border: 2px solid white;
+        color: white;
+        padding: 0.3rem 0.7rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        user-select: none;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      .dark-mode-toggle:hover {
+        background-color: white;
+        color: var(--color-primary);
+      }
+
+      /* Filters */
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+        margin: 1.5rem 0;
+      }
+
+      .filters button {
+        background: var(--color-primary);
+        color: white;
+        padding: 6px 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.2s;
+      }
+
+      .filters button.active {
+        background: var(--color-primary-dark);
+      }
+
+      .filters button:hover {
+        background: var(--color-primary-dark);
+      }
+
+      html.dark .filters button {
+        background: var(--color-primary);
+        color: white;
+      }
+
+      html.dark .filters button.active {
+        background: var(--color-primary-dark);
+      }
+
+      /* Posts container */
+      main.container {
+        max-width: 900px;
+        margin: auto;
+        display: grid;
+        gap: 1.5rem;
+        padding-bottom: 3rem;
+      }
+
+      .card {
+        background: var(--color-card-bg-light);
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+        transition: background-color 0.3s, box-shadow 0.3s;
+      }
+
+      html.dark .card {
+        background: var(--color-card-bg-dark);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+      }
+
+      .topic {
+        font-weight: bold;
+        color: var(--color-primary);
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .timestamp {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 1rem;
+      }
+
+      html.dark .timestamp {
+        color: #bbb;
+      }
+
+      .post {
+        margin-bottom: 1rem;
+        white-space: pre-wrap;
+        line-height: 1.5;
+      }
+
+      .archive-btn {
+        background: var(--color-danger);
+        color: white;
+        border: none;
+        padding: 7px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.2s;
+      }
+
+      .archive-btn:hover {
+        background: #cc4242;
+      }
+
+      /* Loading Spinner */
+      .loader {
+        text-align: center;
+        margin-top: 3rem;
+      }
+
+      .spinner {
+        margin: 0 auto;
+        width: 50px;
+        height: 50px;
+        border: 5px solid var(--color-primary);
+        border-top: 5px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Footer link */
+      footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding: 1rem;
+        font-size: 1rem;
+        color: var(--color-primary);
+      }
+
+      footer a {
+        color: var(--color-primary);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="index.html" class="active" id="nav-home">Home</a>
+        <a href="archive.html" id="nav-archive">Archive</a>
+      </nav>
+      <button class="dark-mode-toggle" id="toggle-theme">🌙 Dark Mode</button>
+    </header>
+
+    <main>
+      <h1 style="text-align: center; margin-top: 1rem">
+        🧠 Auto-Generated LinkedIn Posts
+      </h1>
+
+      <div class="filters" id="filter-bar" aria-label="Topic filters"></div>
+
+      <div class="loader" id="loader">
+        <div
+          class="spinner"
+          role="status"
+          aria-live="polite"
+          aria-label="Loading"
+        ></div>
+        <div>Loading posts...</div>
+      </div>
+
+      <div class="container" id="posts-container" style="display: none"></div>
+
+      <footer>
+        <a href="archive.html">🔐 View Archived Posts</a>
+      </footer>
+    </main>
+
+    <script>
+      // Dark mode toggle + persist
+      const toggleBtn = document.getElementById("toggle-theme");
+      const root = document.documentElement;
+
+      function setDarkMode(on) {
+        if (on) {
+          root.classList.add("dark");
+          toggleBtn.textContent = "☀️ Light Mode";
+          localStorage.setItem("theme", "dark");
+        } else {
+          root.classList.remove("dark");
+          toggleBtn.textContent = "🌙 Dark Mode";
+          localStorage.setItem("theme", "light");
+        }
+      }
+
+      toggleBtn.addEventListener("click", () => {
+        setDarkMode(!root.classList.contains("dark"));
+      });
+
+      // On load set theme from localStorage or system preference
+      (function initTheme() {
+        const saved = localStorage.getItem("theme");
+        if (saved) {
+          setDarkMode(saved === "dark");
+        } else if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+        ) {
+          setDarkMode(true);
+        }
+      })();
+
+      // Topics array (can be synced with backend)
+      const topics = [
+        "Next.js",
+        "React.js",
+        "Docker",
+        "Node.js",
+        "Express.js",
+        "Middleware",
+        "MySQL",
+        "Prisma",
+      ];
+
+      const postsContainer = document.getElementById("posts-container");
+      const loader = document.getElementById("loader");
+      const filterBar = document.getElementById("filter-bar");
+      let activeFilter = "ALL";
+
+      function renderFilters() {
+        filterBar.innerHTML = "";
+        ["ALL", ...topics].forEach((topic) => {
+          const btn = document.createElement("button");
+          btn.textContent = topic;
+          btn.classList.toggle("active", topic === activeFilter);
+          btn.setAttribute("aria-pressed", topic === activeFilter);
+          btn.onclick = () => {
+            activeFilter = topic;
+            renderFilters();
+            fetchAndDisplayPosts();
+          };
+          filterBar.appendChild(btn);
+        });
+      }
+      async function archivePost(timestamp) {
+        const confirm = await Swal.fire({
+          title: "Are you sure?",
+          text: "Do you want to move this post to archive?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes, archive it!",
+        });
+
+        if (!confirm.isConfirmed) return;
+
+        const postCard = document.querySelector(
+          `[data-timestamp="${timestamp}"]`
+        );
+        if (postCard) postCard.remove();
+
+        try {
+          const res = await fetch(`/archive/${timestamp}`, { method: "POST" });
+          if (!res.ok) throw new Error("Failed to archive post");
+
+          await Swal.fire({
+            title: "Archived!",
+            text: "The post was successfully archived.",
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        } catch (err) {
+          await Swal.fire({
+            title: "Error",
+            text: "Error archiving post: " + err.message,
+            icon: "error",
+          });
+          fetchAndDisplayPosts(); // Re-sync UI
+        }
+      }
+
+      async function fetchAndDisplayPosts() {
+        loader.style.display = "block";
+        postsContainer.style.display = "none";
+        try {
+          const res = await fetch("/posts");
+          const posts = await res.json();
+          const filtered =
+            activeFilter === "ALL"
+              ? posts
+              : posts.filter((p) => p.topic === activeFilter);
+
+          postsContainer.innerHTML = "";
+          if (filtered.length === 0) {
+            postsContainer.innerHTML =
+              '<p style="text-align:center; color:#666;">No posts found for this category.</p>';
+          } else {
+            filtered.forEach(({ topic, timestamp, post, index }) => {
+              const card = document.createElement("div");
+              card.className = "card";
+              card.setAttribute("data-timestamp", timestamp);
+              card.innerHTML = `
+              <div class="topic">📌 ${topic}</div>
+              <div class="timestamp">🕒 ${new Date(
+                timestamp
+              ).toLocaleString()}</div>
+              <div class="post">${post.replace(/\n/g, "<br>")}</div>
+              <button class="archive-btn" onclick="archivePost('${timestamp}')">Archive</button>
+            `;
+              postsContainer.appendChild(card);
+            });
+          }
+        } catch (e) {
+          postsContainer.innerHTML = `<p style="color:red; text-align:center;">Failed to load posts: ${e.message}</p>`;
+        } finally {
+          loader.style.display = "none";
+          postsContainer.style.display = "grid";
+        }
+      }
+
+      renderFilters();
+      fetchAndDisplayPosts();
+    </script>
+  </body>
+</html>

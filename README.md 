@@ -1,0 +1,20 @@
+# LinkedIn Post Bot (Node.js + OpenAI + Google Sheets)
+
+This Node.js app automatically generates expert-level LinkedIn posts on random technical topics and saves them to Google Sheets daily at 9:00 AM.
+
+---
+
+## 🔧 Setup
+
+### 1. Clone and Install
+```bash
+git clone <your_repo_url>
+cd linkedin-post-bot
+npm install
+
+Start the daily cron job
+npm start
+
+Run Manually:
+npm run generate-now
+

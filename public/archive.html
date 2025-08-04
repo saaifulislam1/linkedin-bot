@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Archived LinkedIn Posts</title>
+    <style>
+      :root {
+        --color-primary: #0077b5;
+        --color-primary-dark: #005582;
+        --color-bg-light: #f9fafb;
+        --color-bg-dark: #121212;
+        --color-text-light: #222;
+        --color-text-dark: #eee;
+        --color-card-bg-light: white;
+        --color-card-bg-dark: #1e1e1e;
+      }
+
+      html.dark {
+        background-color: var(--color-bg-dark);
+        color: var(--color-text-dark);
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--color-bg-light);
+        color: var(--color-text-light);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      html.dark body {
+        background-color: var(--color-bg-dark);
+        color: var(--color-text-dark);
+      }
+
+      /* Navigation header */
+      header {
+        background: var(--color-primary);
+        color: white;
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+
+      header nav a {
+        color: white;
+        text-decoration: none;
+        margin-right: 1rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+      }
+
+      header nav a:hover,
+      header nav a.active {
+        text-decoration: underline;
+      }
+
+      .dark-mode-toggle {
+        cursor: pointer;
+        background: transparent;
+        border: 2px solid white;
+        color: white;
+        padding: 0.3rem 0.7rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        user-select: none;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      .dark-mode-toggle:hover {
+        background-color: white;
+        color: var(--color-primary);
+      }
+
+      /* Posts container */
+      main.container {
+        max-width: 900px;
+        margin: auto;
+        display: grid;
+        gap: 1.5rem;
+        padding: 2rem 0 3rem;
+      }
+
+      .card {
+        background: var(--color-card-bg-light);
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+        transition: background-color 0.3s, box-shadow 0.3s;
+      }
+
+      html.dark .card {
+        background: var(--color-card-bg-dark);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+      }
+
+      .topic {
+        font-weight: bold;
+        color: var(--color-primary);
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .timestamp {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 1rem;
+      }
+
+      html.dark .timestamp {
+        color: #bbb;
+      }
+
+      .post {
+        white-space: pre-wrap;
+        line-height: 1.5;
+      }
+
+      /* Loading Spinner */
+      .loader {
+        text-align: center;
+        margin-top: 3rem;
+      }
+
+      .spinner {
+        margin: 0 auto;
+        width: 50px;
+        height: 50px;
+        border: 5px solid var(--color-primary);
+        border-top: 5px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Footer link */
+      footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding: 1rem;
+        font-size: 1rem;
+        color: var(--color-primary);
+      }
+
+      footer a {
+        color: var(--color-primary);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="index.html" id="nav-home">Home</a>
+        <a href="archive.html" class="active" id="nav-archive">Archive</a>
+      </nav>
+      <button class="dark-mode-toggle" id="toggle-theme">🌙 Dark Mode</button>
+    </header>
+
+    <main>
+      <h1 style="text-align: center; margin-top: 1rem">
+        🗄️ Archived LinkedIn Posts
+      </h1>
+
+      <div class="loader" id="loader" aria-live="polite" aria-busy="true">
+        <div
+          class="spinner"
+          role="status"
+          aria-label="Loading archived posts"
+        ></div>
+        <div>Loading archived posts...</div>
+      </div>
+
+      <div class="container" id="posts-container" style="display: none"></div>
+
+      <footer>
+        <a href="index.html">🏠 Back to Home</a>
+      </footer>
+    </main>
+
+    <script>
+      // Dark mode toggle + persistence
+      const toggleBtn = document.getElementById("toggle-theme");
+      const root = document.documentElement;
+
+      function setDarkMode(on) {
+        if (on) {
+          root.classList.add("dark");
+          toggleBtn.textContent = "☀️ Light Mode";
+          localStorage.setItem("theme", "dark");
+        } else {
+          root.classList.remove("dark");
+          toggleBtn.textContent = "🌙 Dark Mode";
+          localStorage.setItem("theme", "light");
+        }
+      }
+
+      toggleBtn.addEventListener("click", () => {
+        setDarkMode(!root.classList.contains("dark"));
+      });
+
+      (function initTheme() {
+        const saved = localStorage.getItem("theme");
+        if (saved) {
+          setDarkMode(saved === "dark");
+        } else if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+        ) {
+          setDarkMode(true);
+        }
+      })();
+
+      const postsContainer = document.getElementById("posts-container");
+      const loader = document.getElementById("loader");
+
+      async function fetchArchivedPosts() {
+        loader.style.display = "block";
+        postsContainer.style.display = "none";
+
+        try {
+          const response = await fetch("/archive");
+          if (!response.ok) throw new Error("Network response was not ok");
+          const posts = await response.json();
+
+          postsContainer.innerHTML = "";
+
+          if (!posts.length) {
+            postsContainer.innerHTML =
+              '<p style="text-align:center; color:#666;">No archived posts found.</p>';
+          } else {
+            posts.forEach(({ topic, timestamp, post }) => {
+              const card = document.createElement("div");
+              card.className = "card";
+              card.innerHTML = `
+              <div class="topic">📌 ${topic}</div>
+              <div class="timestamp">🕒 ${new Date(
+                timestamp
+              ).toLocaleString()}</div>
+              <div class="post">${post.replace(/\n/g, "<br>")}</div>
+            `;
+              postsContainer.appendChild(card);
+            });
+          }
+        } catch (error) {
+          postsContainer.innerHTML = `<p style="color:red; text-align:center;">Error loading posts: ${error.message}</p>`;
+        } finally {
+          loader.style.display = "none";
+          postsContainer.style.display = "grid";
+        }
+      }
+
+      fetchArchivedPosts();
+    </script>
+  </body>
+</html>
